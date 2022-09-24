@@ -29,6 +29,15 @@ public class GameManager: MonoBehaviourPun
     }
 
     [PunRPC]
+    void ImInGame()
+    {
+        playersInGame++;
+
+        if (PhotonNetwork.IsMasterClient && playersInGame == PhotonNetwork.PlayerList.Length)
+            photonView.RPC("SpawnPlayer", RpcTarget.All);
+    }
+
+    [PunRPC]
     void SpawnPlayer()
     {
         GameObject playerObj = PhotonNetwork.Instantiate(playerPrefabLocation, spawnPoints
