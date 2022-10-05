@@ -16,14 +16,45 @@ public class PlayerController : MonoBehaviourPun
     public int id;
     public Player photonPlayer;
 
+    private int curAttackerId;
+    public PlayerWeapon weapon;
+    public int curHp;
+    public int maxHp;
+    public int kills;
+    public bool dead;
+    private bool flashingDamage;
+    public MeshRenderer mr;
+
+    [PunRPC]
+    public void Initialize(Player player)
+    {
+        id = player.ActorNumber;
+        photonPlayer = player;
+        GameManager.instance.players[id - 1] = this;
+
+        // is this not our local player?
+        if (!photonView.IsMine)
+        {
+            GetComponentInChildren<Camera>().gameObject.SetActive(false);
+            rig.isKinematic = true;
+        }
+    }
+
     private void Update()
     {
+
+        if (!photonView.IsMine || dead)
+            return;       
+
         Move();
 
         if (Input.GetKeyDown(KeyCode.Space))
-        {
             TryJump();
-        }
+        if (Input.GetMouseButtonDown(0))
+            weapon.TryShoot();
+
+
+        
     }
     
     private void Move()
@@ -51,18 +82,66 @@ public class PlayerController : MonoBehaviourPun
     }
 
     [PunRPC]
-    public void Initialize(Player player)
+    void TakeDamage(int attackerId, int damage)
     {
-        id = player.ActorNumber;
-        photonPlayer = player;
-        GameManager.instance.players[id - 1] = this;
+        if (dead)
+            return;
+        curHp -= damage;
+        curAttackerId = attackerId;
+        // flash the player red
+        photonView.RPC("DamageFlash", RpcTarget.Others);
+        // update the health bar UI
+        // die if no health left
+        if (curHp <= 0)
+            photonView.RPC("Die", RpcTarget.All);
+    }
 
-        // is this not our local player?
-        if (!photonView.IsMine)
+
+    [PunRPC]
+    void DamageFlash()
+    {
+        if (flashingDamage)
+            return;
+        StartCoroutine(DamageFlashCoRoutine());
+        IEnumerator DamageFlashCoRoutine()
         {
-            GetComponentInChildren<Camera>().gameObject.SetActive(false);
-            rig.isKinematic = true;
+            flashingDamage = true;
+            Color defaultColor = mr.material.color;
+            mr.material.color = Color.red;
+            yield return new WaitForSeconds(0.05f);
+            mr.material.color = defaultColor;
+            flashingDamage = false;
         }
     }
+
+    [PunRPC]
+    void Die()
+    {
+        curHp = 0;
+        dead = true;
+        GameManager.instance.alivePlayers--;
+        // host will check win condition
+        if (PhotonNetwork.IsMasterClient)
+            GameManager.instance.CheckWinCondition();
+        // is this our local player?
+        if (photonView.IsMine)
+        {
+            if (curAttackerId != 0)
+                GameManager.instance.GetPlayer(curAttackerId).photonView.RPC("AddKill", RpcTarget.All);
+            // set the cam to spectator
+            GetComponentInChildren<CameraController>().SetAsSpectator();
+            // disable the physics and hide the player
+            rig.isKinematic = true;
+            transform.position = new Vector3(0, -50, 0);
+        }
+    }
+
+    [PunRPC]
+    public void AddKill()
+    {
+        kills++;
+    }
+
+    
 
 }

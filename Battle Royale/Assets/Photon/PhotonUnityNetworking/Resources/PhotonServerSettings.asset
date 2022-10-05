@@ -41,6 +41,18 @@ MonoBehaviour:
   - SpawnPlayer
   - ChangeScene
   - ImInGame
+  - <Update>g__DamageFlash|12_1
+  - <Update>g__Die|12_2
+  - <Update>g__TakeDamage|12_0
+  - SpawnBullet
+  - <Update>g__DamageFlash|13_1
+  - <Update>g__Die|13_2
+  - <Update>g__TakeDamage|13_0
+  - AddKill
+  - DamageFlash
+  - Die
+  - TakeDamage
+  - WinGame
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
