@@ -14,9 +14,9 @@ public class CameraController : MonoBehaviour
 
     [Header("Spectator")]
     public float spectatorMoveSpeed;
+
     private float rotX;
     private float rotY;
-
     private bool isSpectator;
 
     void Start()
@@ -57,7 +57,7 @@ public class CameraController : MonoBehaviour
             transform.localRotation = Quaternion.Euler(-rotY, 0, 0);
 
             // rotate the player horizontally
-            transform.parent.rotation = Quaternion.Euler(transform.rotation.x, rotX, 0);
+            transform.parent.rotation = Quaternion.Euler(0, rotX, 0);
         }
     }
 

@@ -3,32 +3,44 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class Pickup : MonoBehaviour
+public enum PickupType
+{
+    Health,
+    Ammo
+}
+
+public class Pickup : MonoBehaviourPun
 {
     public PickupType type;
     public int value;
 
-    public enum PickupType
-    {
-        Health,
-        Ammo
-    }
-
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Pickup triggered.");
+
         if (!PhotonNetwork.IsMasterClient)
             return;
+
         if (other.CompareTag("Player"))
         {
             // get the player
+            PlayerController player = GameManager.instance.GetPlayer(other.gameObject);
+
+            if (type == PickupType.Health)
+                player.photonView.RPC("Heal", player.photonPlayer, value);
+            else if (type == PickupType.Ammo)
+                player.photonView.RPC("GiveAmmo", player.photonPlayer, value);
+
+            // destroy the object
+            photonView.RPC("DestroyPickup", RpcTarget.AllBuffered);
         }
-        PlayerController player = GameManager.instance.GetPlayer(other.gameObject);
-        if (type == PickupType.Health)
-            player.photonView.RPC("Heal", player.photonPlayer, value);
-        else if (type == PickupType.Ammo)
-            player.photonView.RPC("GiveAmmo", player.photonPlayer, value);
-        // destroy the object
-        PhotonNetwork.Destroy(gameObject);
+        
+    }
+
+    [PunRPC]
+    public void DestroyPickup()
+    {
+        Destroy(gameObject);
     }
 }
 
