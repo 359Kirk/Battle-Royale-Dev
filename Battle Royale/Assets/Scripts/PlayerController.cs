@@ -13,17 +13,21 @@ public class PlayerController : MonoBehaviourPun
 
     [Header("Components")]
     public Rigidbody rig;
+
+    [Header ("Photon")]
     public int id;
     public Player photonPlayer;
 
-    private int curAttackerId;
-    public PlayerWeapon weapon;
+    [Header ("Stats")]
     public int curHp;
     public int maxHp;
     public int kills;
     public bool dead;
     private bool flashingDamage;
     public MeshRenderer mr;
+
+    private int curAttackerId;
+    public PlayerWeapon weapon;
 
     [PunRPC]
     public void Initialize(Player player)
@@ -36,6 +40,7 @@ public class PlayerController : MonoBehaviourPun
         if (!photonView.IsMine)
         {
             GetComponentInChildren<Camera>().gameObject.SetActive(false);
+
             rig.isKinematic = true;
         }
         else
@@ -57,9 +62,6 @@ public class PlayerController : MonoBehaviourPun
             TryJump();
         if (Input.GetMouseButtonDown(0))
             weapon.TryShoot();
-
-
-        
     }
     
     private void Move()

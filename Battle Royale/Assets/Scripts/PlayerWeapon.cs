@@ -13,9 +13,12 @@ public class PlayerWeapon : MonoBehaviour
     public int maxAmmo;
     public float bulletSpeed;
     public float shootRate;
+
     private float lastShootTime;
+
     public GameObject bulletPrefab;
     public Transform bulletSpawnPos;
+
     private PlayerController player;
     void Awake()
     {
@@ -33,6 +36,7 @@ public class PlayerWeapon : MonoBehaviour
         // update the ammo UI
         GameUI.instance.UpdateAmmoText();
         // spawn the bullet
+        Debug.Log(bulletSpawnPos);
         player.photonView.RPC("SpawnBullet", RpcTarget.All, bulletSpawnPos.transform.position, Camera.main.transform.forward);
         
     }
